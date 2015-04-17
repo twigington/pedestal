@@ -11,6 +11,7 @@
             [clojure.edn]
             [io.pedestal.interceptor.helpers :refer [defhandler handler]]
             [io.pedestal.http.servlet :as servlet]
+            [io.pedestal.http.platform :as platform]
             [io.pedestal.http.impl.servlet-interceptor :as servlet-interceptor])
   (:import (org.eclipse.jetty.util.thread QueuedThreadPool)
            (org.eclipse.jetty.server Server Request)
@@ -59,7 +60,7 @@
 
 (defn jetty-server
   [app options]
-  (server (servlet/servlet :service (servlet-interceptor/http-interceptor-service-fn [app]))
+  (server (servlet/servlet :service (platform/http-interceptor-service-fn [app]))
           (assoc options :join? false)))
 
 (defmacro with-server [app options & body]
