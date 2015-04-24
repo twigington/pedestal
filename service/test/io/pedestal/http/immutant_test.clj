@@ -5,7 +5,7 @@
             [clojure.edn]
             [io.pedestal.interceptor.helpers :refer [defhandler handler]]
             [io.pedestal.http.servlet :as servlet]
-            [io.pedestal.http.impl.servlet-interceptor :as servlet-interceptor])
+            [io.pedestal.http.platform :as platform])
   (:import (java.nio ByteBuffer)
            (java.nio.channels Pipe)))
 
@@ -50,7 +50,7 @@
 
 (defn immutant-server
   [app options]
-  (server (servlet/servlet :service (servlet-interceptor/http-interceptor-service-fn [app]))
+  (server (servlet/servlet :service (platform/http-interceptor-service-fn [app]))
           (assoc options :join? false)))
 
 (defmacro with-server [app options & body]

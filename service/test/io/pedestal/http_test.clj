@@ -16,7 +16,7 @@
             [io.pedestal.http :as service]
             [io.pedestal.interceptor.helpers :as interceptor :refer [defon-response defbefore defafter]]
             [io.pedestal.impl.interceptor :as interceptor-impl]
-            [io.pedestal.http.impl.servlet-interceptor :as servlet-interceptor]
+            [io.pedestal.http.platform :as platform]
             [io.pedestal.http.route.definition :refer [defroutes]]
             [ring.util.response :as ring-resp])
   (:import (java.io ByteArrayOutputStream FileInputStream File)
@@ -214,7 +214,7 @@
   (let [obj {:a 1 :b 2 :c [1 2 3]}
         output-stream (ByteArrayOutputStream.)]
     (is (= (with-out-str (pr obj))
-           (do (io.pedestal.http.impl.servlet-interceptor/write-body-to-stream
+           (do (platform/write-body-to-stream
                 (-> obj
                     service/edn-response
                     :body)
@@ -225,7 +225,7 @@
   (let [obj {:a 1 :b 2 :c [1 2 3]}
         output-stream (ByteArrayOutputStream.)]
     (is (= (with-out-str (pr obj))
-           (do (io.pedestal.http.impl.servlet-interceptor/write-body-to-stream
+           (do (platform/write-body-to-stream
                 (-> obj
                     service/edn-response
                     :body)
@@ -236,7 +236,7 @@
   (let [obj {:a 1 :b 2 :c [1 2 3]}
         output-stream (ByteArrayOutputStream.)]
     (is (= (with-out-str (pr obj))
-           (do (io.pedestal.http.impl.servlet-interceptor/write-body-to-stream
+           (do (platform/write-body-to-stream
                 (-> obj
                     ring-resp/response
                     :body)
@@ -253,7 +253,7 @@
   (let [obj {:a 1 :b 2 :c [1 2 3]}
         output-stream (ByteArrayOutputStream.)]
     (is (= (cheshire.core/generate-string obj)
-           (do (io.pedestal.http.impl.servlet-interceptor/write-body-to-stream
+           (do (platform/write-body-to-stream
                 (-> obj
                     service/json-response
                     :body)
@@ -273,7 +273,7 @@
                         FileInputStream.)
         output-stream (ByteArrayOutputStream.)]
     (is (= body-content
-           (do (io.pedestal.http.impl.servlet-interceptor/write-body-to-stream body-stream output-stream)
+           (do (platform/write-body-to-stream body-stream output-stream)
                (slurp-output-stream output-stream))))
     (is (thrown? java.io.IOException
                  ;; This is JVM implementation specific;
@@ -285,7 +285,7 @@
         body-file (create-temp-file body-content)
         output-stream (ByteArrayOutputStream.)]
     (is (= body-content
-           (do (io.pedestal.http.impl.servlet-interceptor/write-body-to-stream body-file output-stream)
+           (do (platform/write-body-to-stream body-file output-stream)
                (slurp-output-stream output-stream))))))
 
 (def anti-forgery-app-interceptors

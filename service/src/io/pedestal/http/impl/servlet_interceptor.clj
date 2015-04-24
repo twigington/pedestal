@@ -12,7 +12,7 @@
 
 (ns io.pedestal.http.impl.servlet-interceptor
   "Interceptors for adapting the Java HTTP Servlet interfaces."
-  (:require [io.pedestal.http.platform :refer [IHTTPRequest IHTTPResponse]])
+  (:require [io.pedestal.http.platform :refer [IHTTPRequest IHTTPResponse IHTTPAsyncRequest]])
   (:import (javax.servlet Servlet ServletRequest ServletConfig)
            (javax.servlet.http HttpServletRequest HttpServletResponse)))
 
@@ -105,14 +105,32 @@
         (add-content-type servlet-req)
         (add-character-encoding servlet-req)
         (add-ssl-client-cert servlet-req)
-        persistent!)))
+        persistent!))
+  IHTTPAsyncRequest
+  (start-async! [^ServletRequest servlet-request]
+    ;; TODO: fix?
+    ;; Embedded Tomcat doesn't allow .startAsync by default, even if the
+    ;; Servlet was annotated with asyncSupported=true. We have to
+    ;; explicitly set it on the request.
+    ;; See http://stackoverflow.com/questions/7749350
+    (.setAttribute servlet-request "org.apache.catalina.ASYNC_SUPPORTED" true)
+    (doto (.startAsync servlet-request)
+      (.setTimeout 0)))
+  (async? [^ServletRequest servlet-request]
+    (.isAsyncStarted servlet-request)))
 
 (extend-type HttpServletResponse
   IHTTPResponse
   (output-stream [^HttpServletResponse this]
     (.getOutputStream this))
-  (set-header! [^HttpServletResponse this h v]
-    (.setHeader this h v))
+  (set-header! [^HttpServletResponse this h vs]
+    (cond
+      (= h "Content-Type") (.setContentType this vs)
+      (= h "Content-Length") (.setContentLengthLong this (Long/parseLong vs))
+      (string? vs) (.setHeader this h vs)
+      (sequential? vs) (doseq [v vs] (.addHeader this h v))
+      :else
+      (throw (ex-info "Invalid header value" {:value vs}))))
   (set-status! [^HttpServletResponse this status]
     (.setStatus this (int status)))
   (committed? [^HttpServletResponse this]
@@ -120,20 +138,9 @@
   (flush-buffer! [^HttpServletResponse this]
     (.flushBuffer this)))
 
-(defn- start-servlet-async*
-  "Begins an asynchronous response to a request."
-  [^ServletRequest servlet-request]
-  ;; TODO: fix?
-  ;; Embedded Tomcat doesn't allow .startAsync by default, even if the
-  ;; Servlet was annotated with asyncSupported=true. We have to
-  ;; explicitly set it on the request.
-  ;; See http://stackoverflow.com/questions/7749350
-  (.setAttribute servlet-request "org.apache.catalina.ASYNC_SUPPORTED" true)
-  (doto (.startAsync servlet-request)
-    (.setTimeout 0)))
 
-(defn- async? [^ServletRequest servlet-request]
-  (.isAsyncStarted servlet-request))
+
+
 
 
 

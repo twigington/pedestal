@@ -19,7 +19,7 @@
             [io.pedestal.http.secure-headers :as sec-headers]
             [io.pedestal.interceptor.helpers :as interceptor]
             [io.pedestal.http.servlet :as servlet]
-            [io.pedestal.http.impl.servlet-interceptor :as servlet-interceptor]
+            [io.pedestal.http.platform :as platform]
             [io.pedestal.http.cors :as cors]
             [ring.util.mime-type :as ring-mime]
             [ring.util.response :as ring-response]
@@ -232,13 +232,13 @@
   (update-in service-map [::interceptors]
              #(vec (->> %
                         (cons cors/dev-allow-origin)
-                        (cons servlet-interceptor/exception-debug)))))
+                        (cons platform/exception-debug)))))
 
 (defn service-fn
   [{interceptors ::interceptors
     :as service-map}]
   (assoc service-map ::service-fn
-         (servlet-interceptor/http-interceptor-service-fn interceptors)))
+         (platform/http-interceptor-service-fn interceptors)))
 
 (defn servlet
   [{service-fn ::service-fn

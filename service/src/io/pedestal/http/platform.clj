@@ -165,8 +165,8 @@
 
 (defn- start-servlet-async
   [{:keys [request] :as context}]
-  (when-not (and (satisfies? IHTTPAsyncRequest request)
-                 (async? request))
+  (when (and (satisfies? IHTTPAsyncRequest request)
+             (not (async? request)))
     (start-async! request)))
 
 (defn- enter-stylobate
