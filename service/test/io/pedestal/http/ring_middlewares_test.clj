@@ -52,7 +52,7 @@
 
 (deftest file-is-valid
   (is (valid-interceptor? (file "public")))
-  (is (= "<h1>WOOT!</h1>\n"
+  (is (= (str "<h1>WOOT!</h1>" (System/getProperty "line.separator"))
          (->
           (context {:uri "/"})
           ((:enter (file "test/io/pedestal/public")))
@@ -159,7 +159,7 @@
 
 (deftest resource-is-valid
   (is (valid-interceptor? (resource "public")))
-  (is (= "<h1>WOOT!</h1>\n"
+  (is (= (str "<h1>WOOT!</h1>" (System/getProperty "line.separator"))
          (->
           (context {:uri "/index.html"})
           ((:enter (resource "/io/pedestal/public")))

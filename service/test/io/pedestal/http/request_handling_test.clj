@@ -71,7 +71,7 @@
        "http://request-handling.pedestal/terminated/leaf" "Terminated."
        "http://request-handling.pedestal/unterminated/leaf" "Leaf handled!"
        "http://request-handling.pedestal/unrouted" "Not Found"
-       "http://request-handling.pedestal/test.txt" "Text data on the classpath\n"
+       "http://request-handling.pedestal/test.txt" (str "Text data on the classpath" (System/getProperty "line.separator"))
        tempfile-url "some test data"))
 
 (defafter custom-not-found
